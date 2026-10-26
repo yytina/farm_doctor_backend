@@ -1,11 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from auth import router as auth_router
+from supabase import create_client, Client
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 # Initialize FastAPI application
 app = FastAPI(
     title="Farm Doctor Backend",
     description="Backend service for Apple Fire Blight AI Detection & Reporting",
     version="1.0.0"
+)
+
+supabase: Client = create_client(
+    os.environ.get("SUPABASE_URL"),
+    os.environ.get("SUPABASE_KEY")
 )
 
 # Configure CORS (Allows communication with your React frontend)
@@ -15,21 +26,12 @@ origins = [
     # "https://your-frontend-domain.vercel.app" # Add your Vercel URL later
 ]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Include authentication router
+app.include_router(auth_router)
 
 @app.get("/")
 def root():
-    return {
-        "message": "Welcome to Farm Doctor API",
-        "status": "online",
-        "docs": "/docs"
-    }
+    return {"message": "Farm Doctor API with JWT Auth is running"}
 
 @app.get("/health")
 def health_check():
