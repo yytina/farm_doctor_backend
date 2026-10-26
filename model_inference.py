@@ -23,7 +23,6 @@ class ModelSpec:
     model_name: str
     model_version: str
     storage_key: str
-    local_path: str | None = None
 
 
 MODEL_SPECS = {
@@ -33,7 +32,6 @@ MODEL_SPECS = {
         model_name="pear_v11_0",
         model_version="11.0",
         storage_key=os.getenv("PEAR_MODEL_KEY", "pear_v11_0.pt"),
-        local_path=os.getenv("PEAR_MODEL_PATH"),
     ),
     "02": ModelSpec(
         crop_code="02",
@@ -41,7 +39,6 @@ MODEL_SPECS = {
         model_name="apple_v11_0",
         model_version="11.0",
         storage_key=os.getenv("APPLE_MODEL_KEY", "apple_v11_0.pt"),
-        local_path=os.getenv("APPLE_MODEL_PATH"),
     ),
 }
 
@@ -67,13 +64,9 @@ class ModelCache:
             return self._models[spec.model_name]
 
     def _load(self, spec: ModelSpec) -> Any:
-        local_model_path = Path(spec.local_path) if spec.local_path else None
-        if local_model_path and local_model_path.is_file():
-            model_path = local_model_path
-        else:
-            model_path = MODEL_CACHE_DIR / spec.model_name / Path(spec.storage_key).name
-            if not model_path.exists():
-                self._download(spec, model_path)
+        model_path = MODEL_CACHE_DIR / spec.model_name / Path(spec.storage_key).name
+        if not model_path.exists():
+            self._download(spec, model_path)
         try:
             from ultralytics import YOLO
         except ImportError as exc:
