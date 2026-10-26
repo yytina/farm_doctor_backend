@@ -1,0 +1,5 @@
+v_farm/
+__pycache__/
+.env
+*.pyc
+.venv/
