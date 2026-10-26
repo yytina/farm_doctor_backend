@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from auth import router as auth_router
+from analysis_jobs import router as analysis_router
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
@@ -16,7 +17,7 @@ app = FastAPI(
 
 supabase: Client = create_client(
     os.environ.get("SUPABASE_URL"),
-    os.environ.get("SUPABASE_KEY")
+    os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_KEY")
 )
 
 # Configure CORS (Allows communication with your React frontend)
@@ -28,6 +29,15 @@ origins = [
 
 # Include authentication router
 app.include_router(auth_router)
+app.include_router(analysis_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/")
 def root():

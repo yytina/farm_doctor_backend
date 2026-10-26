@@ -32,7 +32,7 @@ def get_supabase_client() -> Client:
     """Return the shared client used to query the application users table."""
     load_dotenv()
     supabase_url = os.getenv("SUPABASE_URL")
-    supabase_key = os.getenv("SUPABASE_KEY")
+    supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
     if not supabase_url or not supabase_key:
         raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be configured")
     return create_client(supabase_url, supabase_key)
@@ -45,6 +45,7 @@ class Token(BaseModel):
 
 
 class UserResponse(BaseModel):
+    id: int
     username: str
     full_name: Optional[str] = None
 
@@ -71,7 +72,7 @@ def get_user_record(username: str) -> Optional[dict]:
     response = (
         get_supabase_client()
         .table("users")
-        .select("username, hashed_password, full_name")
+        .select("id, username, hashed_password, full_name")
         .eq("username", username)
         .limit(1)
         .execute()
@@ -84,6 +85,7 @@ def get_user(username: str) -> Optional[UserResponse]:
     if user_record is None:
         return None
     return UserResponse(
+        id=user_record["id"],
         username=user_record["username"],
         full_name=user_record.get("full_name"),
     )
