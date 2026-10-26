@@ -10,8 +10,13 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 from supabase import Client, create_client
 
-# Secret key to sign JWT tokens (In production, load this from environment variables!)
-SECRET_KEY = "apple_fire_blight_ai_detection_secret_key"
+load_dotenv()
+
+# Secret key used to sign JWT tokens. Keep this in environment configuration only.
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("JWT_SECRET_KEY must be configured")
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
